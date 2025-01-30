@@ -3,7 +3,10 @@ package com.ifortex.bookservice.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ifortex.bookservice.dto.BookGenreDto;
+import com.ifortex.bookservice.exception.InvalidGenreException;
 import com.ifortex.bookservice.model.Member;
 import com.ifortex.bookservice.repository.MemberRepository;
 import com.ifortex.bookservice.service.MemberService;
@@ -19,15 +22,20 @@ public class MemberServiceImpl implements MemberService {
     /*
      * {@inheritDoc}
      */
+    @Transactional(readOnly = true)
     @Override
     public Member findMember() {
-        String genre = "Romance";
-        return memberRepository.findFirstMemberByGenre(genre);
+        BookGenreDto bookGenreDto = new BookGenreDto("Romance");
+        if (bookGenreDto == null || bookGenreDto.genre() == null) {
+            throw new InvalidGenreException("Genre not should be empty!");
+        }
+        return memberRepository.findFirstMemberByGenre(bookGenreDto.genre());
     }
 
     /*
      * {@inheritDoc}
      */
+    @Transactional(readOnly = true)
     @Override
     public List<Member> findMembers() {
         return memberRepository.findAllMembers();

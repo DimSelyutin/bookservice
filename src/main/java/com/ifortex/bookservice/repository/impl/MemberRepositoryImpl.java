@@ -33,7 +33,6 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public Member findFirstMemberByGenre(String genre) {
         log.debug("findFirstMemberByGenre start - genre: {}", genre);
-
         try {
             String jpql = "SELECT m FROM Member m JOIN m.books b WHERE b.genre = :genre ORDER BY b.publicationDate ASC";
             TypedQuery<Member> query = entityManager.createQuery(jpql, Member.class);
@@ -70,7 +69,7 @@ public class MemberRepositoryImpl implements MemberRepository {
             log.debug("findAllMembers end - found {} members", members.size());
         } catch (NoResultException e) {
             log.debug("findAllMembers NoResultException: no members found");
-            return Collections.emptyList(); // Возвращаем пустой список, если нет членов
+            return Collections.emptyList();
         } catch (PersistenceException e) {
             log.error("findAllMembers PersistenceException: {}", e.getMessage());
             throw new RuntimeException("Ошибка при выполнении запроса к базе данных", e);

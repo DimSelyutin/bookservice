@@ -3,7 +3,9 @@ package com.ifortex.bookservice.service.impl;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ifortex.bookservice.exception.FailedFetchBookException;
 import com.ifortex.bookservice.repository.BookRepository;
 import com.ifortex.bookservice.service.BookService;
 
@@ -20,16 +22,19 @@ public class BookServiceImpl implements BookService {
     /**
      * {@inheritDoc}
      */
+    @Transactional(readOnly = true)
     @Override
     public Map<String, Long> getBooks() {
         log.debug("Fetching book count by genre");
         try {
+
             Map<String, Long> result = bookRepository.countBooksByGenre();
+
             log.debug("Successfully fetched {} genres", result.size());
             return result;
         } catch (Exception e) {
             log.error("Error fetching book count by genre: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch book count by genre", e);
+            throw new FailedFetchBookException("Failed to fetch book count by genre", e);
         }
     }
 

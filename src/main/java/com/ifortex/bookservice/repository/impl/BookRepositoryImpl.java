@@ -28,12 +28,12 @@ public class BookRepositoryImpl implements BookRepository {
                 log.debug("countBooksByGenre start");
 
                 try {
-                        String sql = "SELECT unnested_genre, COUNT(*) " +
-                                        "FROM (SELECT unnest(genre) AS unnested_genre FROM books) AS sub " +
-                                        "GROUP BY unnested_genre " +
-                                        "ORDER BY COUNT(*) DESC";
+                        String jpql = "SELECT b.genre, COUNT(b) " +
+                                        "FROM Book b " +
+                                        "GROUP BY b.genre " +
+                                        "ORDER BY COUNT(b) DESC";
 
-                        Query query = entityManager.createNativeQuery(sql);
+                        Query query = entityManager.createNativeQuery(jpql);
                         List<Object[]> resultList = query.getResultList();
 
                         Map<String, Long> genreCountMap = resultList.stream()

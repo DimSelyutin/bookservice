@@ -1,5 +1,9 @@
 version: '3.8'
 services:
+  bookservice:
+    build: 
+    depends_on:
+      -postgres
   postgres:
     image: postgres:latest
     container_name: book_service
