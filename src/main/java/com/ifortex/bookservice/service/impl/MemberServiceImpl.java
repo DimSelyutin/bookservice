@@ -12,7 +12,9 @@ import com.ifortex.bookservice.repository.MemberRepository;
 import com.ifortex.bookservice.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -29,7 +31,10 @@ public class MemberServiceImpl implements MemberService {
         if (bookGenreDto == null || bookGenreDto.genre() == null) {
             throw new InvalidGenreException("Genre not should be empty!");
         }
-        return memberRepository.findFirstMemberByGenre(bookGenreDto.genre());
+        Member member = memberRepository.findFirstMemberByGenre(bookGenreDto.genre());
+        log.info(member.toString());
+
+        return member;
     }
 
     /*

@@ -25,8 +25,8 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Override
     public Map<String, Long> getBooks() {
-        log.debug("Fetching book count by genre");
         try {
+            log.debug("Fetching book count by genre");
 
             Map<String, Long> result = bookRepository.countBooksByGenre();
 

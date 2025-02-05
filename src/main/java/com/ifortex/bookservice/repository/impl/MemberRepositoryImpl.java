@@ -2,7 +2,6 @@ package com.ifortex.bookservice.repository.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +11,7 @@ import com.ifortex.bookservice.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,20 +34,29 @@ public class MemberRepositoryImpl implements MemberRepository {
     public Member findFirstMemberByGenre(String genre) {
         log.debug("findFirstMemberByGenre start - genre: {}", genre);
         try {
-            String jpql = "SELECT m FROM Member m JOIN m.books b WHERE b.genre = :genre ORDER BY b.publicationDate ASC";
-            TypedQuery<Member> query = entityManager.createQuery(jpql, Member.class);
-            query.setParameter("genre", genre);
-            query.setMaxResults(1);
+            // Native SQL query that uses PostgreSQL array operator
+            String sql = "SELECT m.* FROM members m " +
+                    "JOIN member_books mb ON m.id = mb.member_id " +
+                    "JOIN books b ON mb.book_id = b.id " +
+                    "WHERE b.genre @> ?::varchar[] ORDER BY b.publication_date ASC LIMIT 1";
 
-            List<Member> members = query.getResultList();
-            Member firstMember = members.isEmpty() ? null : members.get(0);
+            // Create a native query
+            Query query = entityManager.createNativeQuery(sql, Member.class);
+            // Set parameter as an array by wrapping genre in an array
+            query.setParameter(1, new String[] { genre });
+
+            // Get the single result or handle no result scenario
+            Member firstMember = (Member) query.getSingleResult();
 
             log.debug("findFirstMemberByGenre end - found: {}", firstMember);
             return firstMember;
 
+        } catch (NoResultException e) {
+            log.debug("findFirstMemberByGenre end - no member found for genre: {}", genre);
+            return null; // Return null if no member is found
         } catch (PersistenceException e) {
             log.error("findFirstMemberByGenre PersistenceException: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при выполнении запроса к базе данных", e);
+            throw new RuntimeException("Error executing database query", e);
         }
     }
 
@@ -60,9 +69,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
         List<Member> members;
         try {
-            String jpql = "SELECT m FROM Member m " +
-                    "LEFT JOIN m.memberBooks mb " +
-                    "WHERE mb IS NULL";
+            String jpql = "SELECT m FROM Member m LEFT JOIN m.borrowedBooks mb WHERE mb IS NULL";
 
             members = entityManager.createQuery(jpql, Member.class).getResultList();
 
